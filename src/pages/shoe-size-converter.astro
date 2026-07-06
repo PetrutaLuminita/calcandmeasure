@@ -1,0 +1,204 @@
+---
+import ToolLayout from '../layouts/ToolLayout.astro';
+
+const title = 'Shoe Size Converter | Calc and Measure';
+const description =
+  'Convert shoe sizes between US, UK, and EU sizing and foot length in centimeters, for men\'s and women\'s standard sizing.';
+const summary =
+  'Pick men\'s or women\'s sizing, choose the size system you already know, and select your size to see the equivalent US, UK, and EU size along with the standard foot length in centimeters.';
+
+const mens = [
+  { us: '6', uk: '5.5', eu: '39', cm: '24.1' },
+  { us: '6.5', uk: '6', eu: '39.5', cm: '24.4' },
+  { us: '7', uk: '6.5', eu: '40', cm: '25.1' },
+  { us: '7.5', uk: '7', eu: '40.5', cm: '25.4' },
+  { us: '8', uk: '7.5', eu: '41', cm: '25.7' },
+  { us: '8.5', uk: '8', eu: '42', cm: '26.4' },
+  { us: '9', uk: '8.5', eu: '42.5', cm: '26.7' },
+  { us: '9.5', uk: '9', eu: '43', cm: '27.3' },
+  { us: '10', uk: '9.5', eu: '44', cm: '27.9' },
+  { us: '10.5', uk: '10', eu: '44.5', cm: '28.3' },
+  { us: '11', uk: '10.5', eu: '45', cm: '28.9' },
+  { us: '11.5', uk: '11', eu: '45.5', cm: '29.4' },
+  { us: '12', uk: '11.5', eu: '46', cm: '29.7' },
+  { us: '13', uk: '12.5', eu: '47.5', cm: '30.8' },
+];
+
+const womens = [
+  { us: '5', uk: '2.5', eu: '35.5', cm: '22.1' },
+  { us: '5.5', uk: '3', eu: '36', cm: '22.4' },
+  { us: '6', uk: '3.5', eu: '36.5', cm: '22.6' },
+  { us: '6.5', uk: '4', eu: '37.5', cm: '23.2' },
+  { us: '7', uk: '4.5', eu: '38', cm: '23.5' },
+  { us: '7.5', uk: '5', eu: '38.5', cm: '23.8' },
+  { us: '8', uk: '5.5', eu: '39', cm: '24.1' },
+  { us: '8.5', uk: '6', eu: '39.5', cm: '24.4' },
+  { us: '9', uk: '6.5', eu: '40.5', cm: '24.8' },
+  { us: '9.5', uk: '7', eu: '41', cm: '25.1' },
+  { us: '10', uk: '7.5', eu: '42', cm: '25.4' },
+  { us: '11', uk: '8.5', eu: '43', cm: '26.7' },
+];
+
+const faq = [
+  {
+    question: 'Are shoe sizes the same across all brands?',
+    answer:
+      'No. This chart shows standard, widely cited reference sizing. Individual brands and shoe styles can run larger or smaller, so use this as a starting point and check a specific brand\'s own size guide when possible.',
+  },
+  {
+    question: 'How is foot length measured for these sizes?',
+    answer:
+      'Foot length is measured in centimeters from the back of the heel to the tip of the longest toe, typically while standing with weight on the foot.',
+  },
+  {
+    question: 'Why do men\'s and women\'s sizes differ for the same foot length?',
+    answer:
+      'Men\'s and women\'s shoe size scales are offset by convention, roughly 1.5 to 2 US sizes apart for the same foot length, even though the numbering systems are otherwise similar.',
+  },
+  {
+    question: 'What if my foot length falls between two sizes?',
+    answer:
+      'Round up to the next full or half size for the most comfortable fit, since a shoe that is slightly too big is usually more comfortable than one that is slightly too small.',
+  },
+];
+---
+
+<ToolLayout title={title} description={description} slug="shoe-size-converter" summary={summary} faq={faq}>
+  <Fragment slot="tool">
+    <form class="calc-box" id="shoe-form" novalidate>
+      <div class="field-row">
+        <div class="field">
+          <label for="gender-select">Sizing</label>
+          <select id="gender-select">
+            <option value="mens">Men's</option>
+            <option value="womens">Women's</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="system-select">I know my size in</label>
+          <select id="system-select">
+            <option value="us">US</option>
+            <option value="uk">UK</option>
+            <option value="eu">EU</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="size-select">Size</label>
+          <select id="size-select"></select>
+        </div>
+      </div>
+      <button type="submit" class="btn">Convert</button>
+    </form>
+
+    <div class="result-box" id="result-box" hidden>
+      <div class="result-headline" id="result-headline"></div>
+      <div class="result-row">
+        <span>US size</span>
+        <span class="value" id="result-us"></span>
+      </div>
+      <div class="result-row">
+        <span>UK size</span>
+        <span class="value" id="result-uk"></span>
+      </div>
+      <div class="result-row">
+        <span>EU size</span>
+        <span class="value" id="result-eu"></span>
+      </div>
+      <div class="result-row">
+        <span>Foot length</span>
+        <span class="value" id="result-cm"></span>
+      </div>
+    </div>
+
+    <script define:vars={{ mens, womens }}>
+      const data = { mens, womens };
+      const genderSelect = document.getElementById('gender-select');
+      const systemSelect = document.getElementById('system-select');
+      const sizeSelect = document.getElementById('size-select');
+      const form = document.getElementById('shoe-form');
+      const resultBox = document.getElementById('result-box');
+      const headline = document.getElementById('result-headline');
+      const usEl = document.getElementById('result-us');
+      const ukEl = document.getElementById('result-uk');
+      const euEl = document.getElementById('result-eu');
+      const cmEl = document.getElementById('result-cm');
+
+      function populateSizes() {
+        const rows = data[genderSelect.value];
+        const system = systemSelect.value;
+        sizeSelect.innerHTML = '';
+        rows.forEach((row) => {
+          sizeSelect.add(new Option(row[system], row[system]));
+        });
+        resultBox.hidden = true;
+      }
+
+      genderSelect.addEventListener('change', populateSizes);
+      systemSelect.addEventListener('change', populateSizes);
+      populateSizes();
+
+      form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const rows = data[genderSelect.value];
+        const system = systemSelect.value;
+        const size = sizeSelect.value;
+        const row = rows.find((r) => r[system] === size);
+        if (!row) {
+          resultBox.hidden = true;
+          return;
+        }
+        const genderLabel = genderSelect.value === 'mens' ? "Men's" : "Women's";
+        headline.textContent = `${genderLabel} ${system.toUpperCase()} ${size}`;
+        usEl.textContent = row.us;
+        ukEl.textContent = row.uk;
+        euEl.textContent = row.eu;
+        cmEl.textContent = `${row.cm} cm`;
+        resultBox.hidden = false;
+      });
+    </script>
+  </Fragment>
+
+  <Fragment slot="how-it-works">
+    <h2>How It Works</h2>
+    <p>
+      This tool looks up your size in a standard reference conversion table rather than
+      calculating it from a formula, since shoe sizing across US, UK, and EU systems is based
+      on historical measuring conventions rather than a single consistent unit.
+    </p>
+    <p class="disclaimer">
+      Sizing can vary by brand and shoe style. This is a standard reference conversion, not a
+      brand-specific guide.
+    </p>
+    <h3>Men's Sizing</h3>
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr><th scope="col">US</th><th scope="col">UK</th><th scope="col">EU</th><th scope="col">Foot length (cm)</th></tr>
+        </thead>
+        <tbody>
+          {mens.map((row) => (
+            <tr><td>{row.us}</td><td>{row.uk}</td><td>{row.eu}</td><td>{row.cm}</td></tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+    <h3>Women's Sizing</h3>
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr><th scope="col">US</th><th scope="col">UK</th><th scope="col">EU</th><th scope="col">Foot length (cm)</th></tr>
+        </thead>
+        <tbody>
+          {womens.map((row) => (
+            <tr><td>{row.us}</td><td>{row.uk}</td><td>{row.eu}</td><td>{row.cm}</td></tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+    <h3>Worked Example</h3>
+    <p>
+      A men's US size 9 corresponds to a UK size 8.5, an EU size 42.5, and a foot length of
+      about 26.7 centimeters, based on the table above.
+    </p>
+  </Fragment>
+</ToolLayout>

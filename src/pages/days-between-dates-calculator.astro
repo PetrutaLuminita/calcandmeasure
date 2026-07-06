@@ -1,0 +1,223 @@
+---
+import ToolLayout from '../layouts/ToolLayout.astro';
+
+const title = 'Days Between Dates Calculator | Calc and Measure';
+const description =
+  'Calculate the number of days, weeks, months, and years between two dates, with an optional business day count.';
+const summary =
+  'Enter a start date and an end date to get the total number of days between them, the same span shown in weeks, months, and years, and an optional count of business days (Monday through Friday) if you turn that option on.';
+
+const faq = [
+  {
+    question: 'Does the count include both the start and end date?',
+    answer:
+      'The total is the number of days between the two dates, not the number of calendar days touched. For example, January 1 to January 2 is 1 day apart. If you need an inclusive count, add 1 to the result.',
+  },
+  {
+    question: 'How are the months and years figured out?',
+    answer:
+      'The calculator compares the year, month, and day of each date directly, the same way you would count on a calendar, rather than dividing total days by 30 or 365. This gives an accurate breakdown even though months have different lengths.',
+  },
+  {
+    question: 'What counts as a business day?',
+    answer:
+      'Business days here means Monday through Friday. The tool does not exclude public holidays, since those vary by country and region.',
+  },
+  {
+    question: 'Can I use this to count down to a future event?',
+    answer:
+      'Yes. Set the start date to today and the end date to the event date, and the result shows how many days, weeks, months, and years remain.',
+  },
+  {
+    question: 'What happens if I enter the end date before the start date?',
+    answer:
+      'The calculator will show an error and ask you to check the dates. Enter the earlier date as the start date and the later date as the end date.',
+  },
+];
+---
+
+<ToolLayout title={title} description={description} slug="days-between-dates-calculator" summary={summary} faq={faq}>
+  <Fragment slot="tool">
+    <form class="calc-box" id="dbd-form" novalidate>
+      <div class="field-row">
+        <div class="field" id="start-field">
+          <label for="start-input">Start date</label>
+          <input type="date" id="start-input" name="start" required />
+          <span class="error-msg" id="start-error">Enter a valid start date.</span>
+        </div>
+        <div class="field" id="end-field">
+          <label for="end-input">End date</label>
+          <input type="date" id="end-input" name="end" required />
+          <span class="error-msg" id="end-error">Enter a valid end date on or after the start date.</span>
+        </div>
+      </div>
+      <div class="field-row">
+        <label class="checkbox-field">
+          <input type="checkbox" id="business-toggle" name="business" />
+          Also show business days (Monday to Friday)
+        </label>
+      </div>
+      <button type="submit" class="btn">Calculate</button>
+    </form>
+
+    <div class="result-box" id="result-box" hidden>
+      <div class="result-headline" id="result-headline"></div>
+      <div class="result-row">
+        <span>Weeks</span>
+        <span class="value" id="result-weeks"></span>
+      </div>
+      <div class="result-row">
+        <span>Months, years span</span>
+        <span class="value" id="result-span"></span>
+      </div>
+      <div class="result-row" id="business-row" hidden>
+        <span>Business days (Mon-Fri)</span>
+        <span class="value" id="result-business"></span>
+      </div>
+    </div>
+
+    <script>
+      const form = document.getElementById('dbd-form') as HTMLFormElement;
+      const startInput = document.getElementById('start-input') as HTMLInputElement;
+      const endInput = document.getElementById('end-input') as HTMLInputElement;
+      const startField = document.getElementById('start-field') as HTMLElement;
+      const endField = document.getElementById('end-field') as HTMLElement;
+      const businessToggle = document.getElementById('business-toggle') as HTMLInputElement;
+      const resultBox = document.getElementById('result-box') as HTMLElement;
+      const headline = document.getElementById('result-headline') as HTMLElement;
+      const weeksEl = document.getElementById('result-weeks') as HTMLElement;
+      const spanEl = document.getElementById('result-span') as HTMLElement;
+      const businessRow = document.getElementById('business-row') as HTMLElement;
+      const businessEl = document.getElementById('result-business') as HTMLElement;
+
+      function localTodayISO() {
+        const d = new Date();
+        const y = d.getFullYear();
+        const m = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        return `${y}-${m}-${day}`;
+      }
+
+      const todayStr = localTodayISO();
+      startInput.value = todayStr;
+
+      function parseDateInput(value: string) {
+        const [y, m, d] = value.split('-').map(Number);
+        return new Date(y, m - 1, d);
+      }
+
+      function daysInMonth(year: number, monthIndex: number) {
+        return new Date(year, monthIndex + 1, 0).getDate();
+      }
+
+      function calendarSpan(start: Date, end: Date) {
+        let years = end.getFullYear() - start.getFullYear();
+        let months = end.getMonth() - start.getMonth();
+        let days = end.getDate() - start.getDate();
+        if (days < 0) {
+          let prevMonth = end.getMonth() - 1;
+          let prevYear = end.getFullYear();
+          if (prevMonth < 0) {
+            prevMonth = 11;
+            prevYear -= 1;
+          }
+          days += daysInMonth(prevYear, prevMonth);
+          months -= 1;
+        }
+        if (months < 0) {
+          months += 12;
+          years -= 1;
+        }
+        return { years, months, days };
+      }
+
+      function countBusinessDays(start: Date, end: Date) {
+        let count = 0;
+        const cur = new Date(start);
+        while (cur.getTime() < end.getTime()) {
+          const day = cur.getDay();
+          if (day !== 0 && day !== 6) count += 1;
+          cur.setDate(cur.getDate() + 1);
+        }
+        return count;
+      }
+
+      form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        startField.classList.remove('has-error');
+        endField.classList.remove('has-error');
+
+        const startVal = startInput.value;
+        const endVal = endInput.value;
+        let hasError = false;
+
+        if (!startVal) {
+          startField.classList.add('has-error');
+          hasError = true;
+        }
+        if (!endVal) {
+          endField.classList.add('has-error');
+          hasError = true;
+        }
+        if (hasError) {
+          resultBox.hidden = true;
+          return;
+        }
+
+        const start = parseDateInput(startVal);
+        const end = parseDateInput(endVal);
+
+        if (start.getTime() > end.getTime()) {
+          endField.classList.add('has-error');
+          resultBox.hidden = true;
+          return;
+        }
+
+        const msPerDay = 24 * 60 * 60 * 1000;
+        const startUTC = Date.UTC(start.getFullYear(), start.getMonth(), start.getDate());
+        const endUTC = Date.UTC(end.getFullYear(), end.getMonth(), end.getDate());
+        const totalDays = Math.round((endUTC - startUTC) / msPerDay);
+        const weeks = Math.floor(totalDays / 7);
+        const remainderDays = totalDays % 7;
+        const span = calendarSpan(start, end);
+
+        const plural = (n: number, word: string) => `${n.toLocaleString()} ${word}${n === 1 ? '' : 's'}`;
+        headline.textContent = plural(totalDays, 'day');
+        weeksEl.textContent = `${plural(weeks, 'week')}, ${plural(remainderDays, 'day')}`;
+        spanEl.textContent = `${plural(span.years, 'year')}, ${plural(span.months, 'month')}, ${plural(span.days, 'day')}`;
+
+        if (businessToggle.checked) {
+          const businessDays = countBusinessDays(start, end);
+          businessEl.textContent = plural(businessDays, 'day');
+          businessRow.hidden = false;
+        } else {
+          businessRow.hidden = true;
+        }
+
+        resultBox.hidden = false;
+      });
+    </script>
+  </Fragment>
+
+  <Fragment slot="how-it-works">
+    <h2>How It Works</h2>
+    <p>
+      The total day count is worked out by converting both dates to a fixed reference point
+      (midnight UTC) and finding the difference in days, so results are not affected by
+      daylight saving time changes. That total is then also shown in whole weeks with a
+      remainder, and broken down into years, months, and days the same way a calendar would,
+      by comparing the year, month, and day values of each date directly.
+    </p>
+    <p>
+      When the business day option is turned on, the calculator steps through each day in the
+      range and counts every day that falls Monday through Friday. It does not exclude public
+      holidays, since those differ by country.
+    </p>
+    <h3>Worked Example</h3>
+    <p>
+      From March 1, 2026 to June 15, 2026 is 106 days, which is 15 weeks and 1 day, or 3 months
+      and 14 days on the calendar. If you also check business days for that same range, the
+      count comes to 75 weekdays.
+    </p>
+  </Fragment>
+</ToolLayout>

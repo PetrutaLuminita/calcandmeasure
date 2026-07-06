@@ -1,0 +1,164 @@
+---
+import ToolLayout from '../layouts/ToolLayout.astro';
+
+const title = 'GPA Calculator | Calc and Measure';
+const description =
+  'Calculate your weighted grade point average from letter grades and credit hours using the standard 4.0 scale.';
+const summary =
+  'Add a row for each course with its letter grade and credit hours, and this tool calculates your weighted GPA on the standard 4.0 scale used by most US institutions.';
+
+const faq = [
+  {
+    question: 'What grade scale does this calculator use?',
+    answer:
+      'It uses the common US 4.0 scale: A = 4.0, A- = 3.7, B+ = 3.3, B = 3.0, B- = 2.7, C+ = 2.3, C = 2.0, C- = 1.7, D+ = 1.3, D = 1.0, D- = 0.7, F = 0.0.',
+  },
+  {
+    question: 'Do all schools use this exact scale?',
+    answer:
+      'No. Some institutions round differently, use a different scale entirely, or do not award plus and minus grades. Check your school\'s official grading policy if you need an exact match to your transcript.',
+  },
+  {
+    question: 'How is weighted GPA different from a simple average?',
+    answer:
+      'Weighted GPA accounts for how many credit hours each course is worth, so a 4-credit class affects your GPA more than a 1-credit class. A simple average would treat every course equally regardless of credit hours.',
+  },
+  {
+    question: 'Can I add more than one semester of courses?',
+    answer:
+      'Yes. Add a row for every course you want included, regardless of which semester or term it was taken in, and the calculator will average all of them together into one overall GPA.',
+  },
+  {
+    question: 'What if I have a Pass/Fail or an Incomplete course?',
+    answer:
+      'This calculator only supports standard letter grades A through F. Pass/Fail and Incomplete grades typically do not count toward GPA and should be left out of the calculation.',
+  },
+];
+---
+
+<ToolLayout title={title} description={description} slug="gpa-calculator" summary={summary} faq={faq}>
+  <Fragment slot="tool">
+    <form class="calc-box" id="gpa-form" novalidate>
+      <div class="table-scroll">
+        <table id="gpa-table">
+          <thead>
+            <tr>
+              <th scope="col">Course (optional)</th>
+              <th scope="col">Letter grade</th>
+              <th scope="col">Credit hours</th>
+              <th scope="col"></th>
+            </tr>
+          </thead>
+          <tbody id="gpa-rows"></tbody>
+        </table>
+      </div>
+      <button type="button" class="btn btn-secondary" id="add-row-btn">Add course</button>
+      <div style="margin-top:16px;">
+        <button type="submit" class="btn">Calculate GPA</button>
+      </div>
+    </form>
+
+    <div class="result-box" id="result-box" hidden>
+      <div class="result-headline" id="result-headline"></div>
+      <div class="result-row">
+        <span>Total credit hours</span>
+        <span class="value" id="result-credits"></span>
+      </div>
+    </div>
+
+    <template id="row-template">
+      <tr class="gpa-row">
+        <td><input type="text" class="course-name" aria-label="Course name" placeholder="e.g. Biology 101" /></td>
+        <td>
+          <select class="grade-select" aria-label="Letter grade">
+            <option value="4.0">A</option>
+            <option value="3.7">A-</option>
+            <option value="3.3">B+</option>
+            <option value="3.0">B</option>
+            <option value="2.7">B-</option>
+            <option value="2.3">C+</option>
+            <option value="2.0">C</option>
+            <option value="1.7">C-</option>
+            <option value="1.3">D+</option>
+            <option value="1.0">D</option>
+            <option value="0.7">D-</option>
+            <option value="0.0">F</option>
+          </select>
+        </td>
+        <td><input type="number" class="credit-hours" aria-label="Credit hours" min="0" step="0.5" value="3" /></td>
+        <td><button type="button" class="btn btn-secondary remove-row-btn" aria-label="Remove course">Remove</button></td>
+      </tr>
+    </template>
+
+    <script>
+      const rowsBody = document.getElementById('gpa-rows') as HTMLTableSectionElement;
+      const template = document.getElementById('row-template') as HTMLTemplateElement;
+      const addRowBtn = document.getElementById('add-row-btn') as HTMLButtonElement;
+      const form = document.getElementById('gpa-form') as HTMLFormElement;
+      const resultBox = document.getElementById('result-box') as HTMLElement;
+      const headline = document.getElementById('result-headline') as HTMLElement;
+      const creditsEl = document.getElementById('result-credits') as HTMLElement;
+
+      function addRow() {
+        const clone = template.content.cloneNode(true) as DocumentFragment;
+        const removeBtn = clone.querySelector('.remove-row-btn') as HTMLButtonElement;
+        removeBtn.addEventListener('click', (e) => {
+          const row = (e.target as HTMLElement).closest('tr');
+          row?.remove();
+        });
+        rowsBody.appendChild(clone);
+      }
+
+      addRowBtn.addEventListener('click', addRow);
+      for (let i = 0; i < 3; i++) addRow();
+
+      form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const rows = Array.from(rowsBody.querySelectorAll('.gpa-row'));
+        let totalPoints = 0;
+        let totalCredits = 0;
+
+        rows.forEach((row) => {
+          const gradeSelect = row.querySelector('.grade-select') as HTMLSelectElement;
+          const creditInput = row.querySelector('.credit-hours') as HTMLInputElement;
+          const gradePoint = parseFloat(gradeSelect.value);
+          const credits = parseFloat(creditInput.value);
+          if (!Number.isNaN(gradePoint) && !Number.isNaN(credits) && credits > 0) {
+            totalPoints += gradePoint * credits;
+            totalCredits += credits;
+          }
+        });
+
+        if (totalCredits === 0) {
+          resultBox.hidden = true;
+          return;
+        }
+
+        const gpa = totalPoints / totalCredits;
+        headline.textContent = `GPA: ${gpa.toFixed(2)}`;
+        creditsEl.textContent = String(totalCredits);
+        resultBox.hidden = false;
+      });
+    </script>
+  </Fragment>
+
+  <Fragment slot="how-it-works">
+    <h2>How It Works</h2>
+    <p>
+      Each letter grade is converted to a grade point using the standard 4.0 scale. Every
+      course's grade point is multiplied by its credit hours to get quality points. All quality
+      points are added up and divided by the total credit hours to get your weighted GPA.
+    </p>
+    <p class="disclaimer">
+      Some institutions use a slightly different scale or do not award plus and minus grades.
+      Check your school's official policy if you need an exact match.
+    </p>
+    <h3>Worked Example</h3>
+    <p>
+      Take three courses: a 4-credit course with a B+ (3.3), a 3-credit course with an A (4.0),
+      and a 3-credit course with a C (2.0). Quality points: (3.3 x 4) plus (4.0 x 3) plus (2.0 x
+      3) equals 13.2 plus 12.0 plus 6.0, which is 31.2. Total credit hours: 4 plus 3 plus 3
+      equals 10. GPA: 31.2 divided by 10 equals 3.12.
+    </p>
+  </Fragment>
+</ToolLayout>

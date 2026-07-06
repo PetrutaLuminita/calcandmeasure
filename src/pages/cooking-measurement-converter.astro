@@ -1,0 +1,159 @@
+---
+import ToolLayout from '../layouts/ToolLayout.astro';
+
+const title = 'Cooking Measurement Converter | Calc and Measure';
+const description =
+  'Convert cups, tablespoons, and teaspoons of common baking ingredients into grams and ounces using standard reference weights.';
+const summary =
+  'Pick an ingredient and a volume measurement (cup, tablespoon, or teaspoon), enter an amount, and this tool converts it into grams and ounces using standard baking reference weights.';
+
+const ingredients = [
+  { key: 'flour', label: 'All-purpose flour', gramsPerCup: 120 },
+  { key: 'sugar', label: 'Granulated sugar', gramsPerCup: 200 },
+  { key: 'brownSugar', label: 'Brown sugar (packed)', gramsPerCup: 220 },
+  { key: 'powderedSugar', label: 'Powdered sugar', gramsPerCup: 120 },
+  { key: 'butter', label: 'Butter', gramsPerCup: 227 },
+  { key: 'rice', label: 'Rice (uncooked)', gramsPerCup: 185 },
+  { key: 'oats', label: 'Rolled oats', gramsPerCup: 90 },
+  { key: 'honey', label: 'Honey', gramsPerCup: 340 },
+  { key: 'milk', label: 'Milk', gramsPerCup: 245 },
+];
+
+const faq = [
+  {
+    question: 'Why does a cup of flour weigh less than a cup of honey?',
+    answer:
+      'Weight per cup depends on the density of the ingredient, not just its volume. Honey is dense and syrupy, so it packs more mass into the same cup than a light, airy ingredient like flour.',
+  },
+  {
+    question: 'Does "packed" matter for brown sugar?',
+    answer:
+      'Yes. Brown sugar is typically measured packed firmly into the cup, which is why its reference weight is higher than a loosely measured ingredient of similar volume.',
+  },
+  {
+    question: 'How many tablespoons are in a cup?',
+    answer: 'There are 16 tablespoons in a US cup, and 3 teaspoons in a tablespoon, so 48 teaspoons in a cup.',
+  },
+  {
+    question: 'Are these conversions exact for every brand of ingredient?',
+    answer:
+      'These are standard, widely cited reference weights used in most baking conversion charts. Actual weight can vary slightly depending on how an ingredient is measured, its brand, and its moisture content.',
+  },
+  {
+    question: 'Why does weighing ingredients matter for baking?',
+    answer:
+      'Volume measurements like cups can vary depending on how tightly an ingredient is packed or leveled, while a kitchen scale gives a consistent, repeatable weight, which is why many baking recipes prefer grams.',
+  },
+];
+---
+
+<ToolLayout title={title} description={description} slug="cooking-measurement-converter" summary={summary} faq={faq}>
+  <Fragment slot="tool">
+    <form class="calc-box" id="cook-form" novalidate>
+      <div class="field-row">
+        <div class="field">
+          <label for="ingredient-select">Ingredient</label>
+          <select id="ingredient-select">
+            {ingredients.map((ing) => (
+              <option value={ing.key}>{ing.label}</option>
+            ))}
+          </select>
+        </div>
+        <div class="field">
+          <label for="amount-input">Amount</label>
+          <input type="number" id="amount-input" min="0" step="any" value="1" required />
+          <span class="error-msg" id="amount-error">Enter an amount of 0 or more.</span>
+        </div>
+        <div class="field">
+          <label for="measure-select">Measurement</label>
+          <select id="measure-select">
+            <option value="cup">Cup</option>
+            <option value="tbsp">Tablespoon</option>
+            <option value="tsp">Teaspoon</option>
+          </select>
+        </div>
+      </div>
+      <button type="submit" class="btn">Convert</button>
+    </form>
+
+    <div class="result-box" id="result-box" hidden>
+      <div class="result-headline" id="result-headline"></div>
+      <div class="result-row">
+        <span>Grams</span>
+        <span class="value" id="result-grams"></span>
+      </div>
+      <div class="result-row">
+        <span>Ounces</span>
+        <span class="value" id="result-ounces"></span>
+      </div>
+    </div>
+
+    <script define:vars={{ ingredients }}>
+      const ingredientSelect = document.getElementById('ingredient-select');
+      const amountInput = document.getElementById('amount-input');
+      const amountField = amountInput.closest('.field');
+      const measureSelect = document.getElementById('measure-select');
+      const form = document.getElementById('cook-form');
+      const resultBox = document.getElementById('result-box');
+      const headline = document.getElementById('result-headline');
+      const gramsEl = document.getElementById('result-grams');
+      const ouncesEl = document.getElementById('result-ounces');
+
+      const measureFractionOfCup = { cup: 1, tbsp: 1 / 16, tsp: 1 / 48 };
+      const measureLabel = { cup: 'cup', tbsp: 'tablespoon', tsp: 'teaspoon' };
+
+      form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        amountField.classList.remove('has-error');
+        const amount = parseFloat(amountInput.value);
+        if (Number.isNaN(amount) || amount < 0) {
+          amountField.classList.add('has-error');
+          resultBox.hidden = true;
+          return;
+        }
+
+        const ingredient = ingredients.find((i) => i.key === ingredientSelect.value);
+        const measure = measureSelect.value;
+        const gramsPerUnit = ingredient.gramsPerCup * measureFractionOfCup[measure];
+        const grams = amount * gramsPerUnit;
+        const ounces = grams / 28.3495;
+
+        const unitLabel = amount === 1 ? measureLabel[measure] : `${measureLabel[measure]}s`;
+        headline.textContent = `${amount} ${unitLabel} of ${ingredient.label}`;
+        gramsEl.textContent = `${Math.round(grams * 10) / 10} g`;
+        ouncesEl.textContent = `${Math.round(ounces * 100) / 100} oz`;
+        resultBox.hidden = false;
+      });
+    </script>
+  </Fragment>
+
+  <Fragment slot="how-it-works">
+    <h2>How It Works</h2>
+    <p>
+      Each ingredient has a standard reference weight per cup. Tablespoon and teaspoon amounts
+      are worked out as a fraction of that cup weight, since there are 16 tablespoons and 48
+      teaspoons in a US cup. The result is then also converted to ounces by dividing grams by
+      28.3495, the number of grams in an ounce.
+    </p>
+    <p class="disclaimer">
+      These are standard, widely cited reference weights. Actual weight can vary depending on
+      brand, moisture, and how firmly an ingredient is packed into the measuring cup.
+    </p>
+    <h3>Reference Weights (per US cup)</h3>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th scope="col">Ingredient</th><th scope="col">Grams per cup</th></tr></thead>
+        <tbody>
+          {ingredients.map((ing) => (
+            <tr><td>{ing.label}</td><td>{ing.gramsPerCup} g</td></tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+    <h3>Worked Example</h3>
+    <p>
+      2 cups of all-purpose flour: 2 times 120 grams equals 240 grams, which is about 8.47
+      ounces (240 divided by 28.3495).
+    </p>
+  </Fragment>
+</ToolLayout>

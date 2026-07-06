@@ -1,0 +1,198 @@
+---
+import ToolLayout from '../layouts/ToolLayout.astro';
+
+const title = 'Clothing Size Converter | Calc and Measure';
+const description =
+  'Convert clothing sizes from XS to XXL between US, UK, EU, and international sizing for men\'s and women\'s tops and bottoms.';
+const summary =
+  'Choose men\'s or women\'s, tops or bottoms, and a size from XS to XXL, and this tool shows the equivalent US, UK, and EU size ranges as a general sizing reference.';
+
+const tables = {
+  womensTops: [
+    { size: 'XS', us: '0 to 2', uk: '4 to 6', eu: '32 to 34' },
+    { size: 'S', us: '4 to 6', uk: '8 to 10', eu: '36 to 38' },
+    { size: 'M', us: '8 to 10', uk: '12 to 14', eu: '40 to 42' },
+    { size: 'L', us: '12 to 14', uk: '16 to 18', eu: '44 to 46' },
+    { size: 'XL', us: '16 to 18', uk: '20 to 22', eu: '48 to 50' },
+    { size: 'XXL', us: '20 to 22', uk: '24 to 26', eu: '52 to 54' },
+  ],
+  womensBottoms: [
+    { size: 'XS', us: '0 to 2', uk: '4 to 6', eu: '32 to 34' },
+    { size: 'S', us: '4 to 6', uk: '8 to 10', eu: '36 to 38' },
+    { size: 'M', us: '8 to 10', uk: '12 to 14', eu: '40 to 42' },
+    { size: 'L', us: '12 to 14', uk: '16 to 18', eu: '44 to 46' },
+    { size: 'XL', us: '16 to 18', uk: '20 to 22', eu: '48 to 50' },
+    { size: 'XXL', us: '20 to 22', uk: '24 to 26', eu: '52 to 54' },
+  ],
+  mensTops: [
+    { size: 'XS', us: '34 to 36', uk: '34 to 36', eu: '44 to 46' },
+    { size: 'S', us: '36 to 38', uk: '36 to 38', eu: '46 to 48' },
+    { size: 'M', us: '39 to 41', uk: '39 to 41', eu: '48 to 50' },
+    { size: 'L', us: '42 to 44', uk: '42 to 44', eu: '52 to 54' },
+    { size: 'XL', us: '45 to 47', uk: '45 to 47', eu: '55 to 57' },
+    { size: 'XXL', us: '48 to 50', uk: '48 to 50', eu: '58 to 60' },
+  ],
+  mensBottoms: [
+    { size: 'XS', us: '28 to 29', uk: '28 to 29', eu: '44 to 46' },
+    { size: 'S', us: '30 to 31', uk: '30 to 31', eu: '46 to 48' },
+    { size: 'M', us: '32 to 33', uk: '32 to 33', eu: '48 to 50' },
+    { size: 'L', us: '34 to 36', uk: '34 to 36', eu: '50 to 52' },
+    { size: 'XL', us: '38 to 40', uk: '38 to 40', eu: '54 to 56' },
+    { size: 'XXL', us: '42 to 44', uk: '42 to 44', eu: '58 to 60' },
+  ],
+};
+
+const faq = [
+  {
+    question: 'Is there one universal clothing size standard?',
+    answer:
+      'No. Clothing sizing varies significantly by brand, country, and even by garment cut within the same brand. This chart is a general reference guide, not a brand-specific size chart.',
+  },
+  {
+    question: 'Why do men\'s and women\'s size charts look so different?',
+    answer:
+      'Men\'s clothing is often sized by body measurements in inches (like chest or waist size), while women\'s clothing commonly uses a separate numbered scale. Both are mapped to the same XS to XXL letter sizes here for easy comparison.',
+  },
+  {
+    question: 'Should I size up or down between brands?',
+    answer:
+      'If a brand runs small or large, check that brand\'s own size chart and customer reviews when available. This general chart is a helpful starting point, not a guarantee of fit for any specific label.',
+  },
+  {
+    question: 'Do bottoms and tops use the same size scale?',
+    answer:
+      'They are shown on the same XS to XXL scale here for simplicity, but a person\'s top size and bottom size do not always match, since body proportions vary.',
+  },
+];
+
+const categoryLabels = {
+  womensTops: "Women's Tops",
+  womensBottoms: "Women's Bottoms",
+  mensTops: "Men's Tops",
+  mensBottoms: "Men's Bottoms",
+};
+---
+
+<ToolLayout title={title} description={description} slug="clothing-size-converter" summary={summary} faq={faq}>
+  <Fragment slot="tool">
+    <form class="calc-box" id="clothing-form" novalidate>
+      <div class="field-row">
+        <div class="field">
+          <label for="category-select">Category</label>
+          <select id="category-select">
+            <option value="womensTops">Women's Tops</option>
+            <option value="womensBottoms">Women's Bottoms</option>
+            <option value="mensTops">Men's Tops</option>
+            <option value="mensBottoms">Men's Bottoms</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="size-select">Size (international)</label>
+          <select id="size-select">
+            <option value="XS">XS</option>
+            <option value="S">S</option>
+            <option value="M">M</option>
+            <option value="L">L</option>
+            <option value="XL">XL</option>
+            <option value="XXL">XXL</option>
+          </select>
+        </div>
+      </div>
+      <button type="submit" class="btn">Convert</button>
+    </form>
+
+    <div class="result-box" id="result-box" hidden>
+      <div class="result-headline" id="result-headline"></div>
+      <div class="result-row">
+        <span>US size</span>
+        <span class="value" id="result-us"></span>
+      </div>
+      <div class="result-row">
+        <span>UK size</span>
+        <span class="value" id="result-uk"></span>
+      </div>
+      <div class="result-row">
+        <span>EU size</span>
+        <span class="value" id="result-eu"></span>
+      </div>
+    </div>
+
+    <script define:vars={{ tables, categoryLabels }}>
+      const categorySelect = document.getElementById('category-select');
+      const sizeSelect = document.getElementById('size-select');
+      const form = document.getElementById('clothing-form');
+      const resultBox = document.getElementById('result-box');
+      const headline = document.getElementById('result-headline');
+      const usEl = document.getElementById('result-us');
+      const ukEl = document.getElementById('result-uk');
+      const euEl = document.getElementById('result-eu');
+
+      form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const rows = tables[categorySelect.value];
+        const size = sizeSelect.value;
+        const row = rows.find((r) => r.size === size);
+        if (!row) {
+          resultBox.hidden = true;
+          return;
+        }
+        headline.textContent = `${categoryLabels[categorySelect.value]}, size ${size}`;
+        usEl.textContent = row.us;
+        ukEl.textContent = row.uk;
+        euEl.textContent = row.eu;
+        resultBox.hidden = false;
+      });
+    </script>
+  </Fragment>
+
+  <Fragment slot="how-it-works">
+    <h2>How It Works</h2>
+    <p>
+      This tool looks up your chosen international letter size (XS through XXL) in a general
+      reference table and shows the roughly equivalent US, UK, and EU size ranges for that
+      category of garment.
+    </p>
+    <p class="disclaimer">
+      Clothing sizing varies significantly by brand. This is a general reference guide, not a
+      brand-specific size chart.
+    </p>
+    <h3>Women's Tops</h3>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th scope="col">Intl</th><th scope="col">US</th><th scope="col">UK</th><th scope="col">EU</th></tr></thead>
+        <tbody>
+          {tables.womensTops.map((row) => (
+            <tr><td>{row.size}</td><td>{row.us}</td><td>{row.uk}</td><td>{row.eu}</td></tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+    <h3>Men's Tops</h3>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th scope="col">Intl</th><th scope="col">US (chest, in)</th><th scope="col">UK (chest, in)</th><th scope="col">EU</th></tr></thead>
+        <tbody>
+          {tables.mensTops.map((row) => (
+            <tr><td>{row.size}</td><td>{row.us}</td><td>{row.uk}</td><td>{row.eu}</td></tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+    <h3>Men's Bottoms</h3>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th scope="col">Intl</th><th scope="col">US (waist, in)</th><th scope="col">UK (waist, in)</th><th scope="col">EU</th></tr></thead>
+        <tbody>
+          {tables.mensBottoms.map((row) => (
+            <tr><td>{row.size}</td><td>{row.us}</td><td>{row.uk}</td><td>{row.eu}</td></tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+    <h3>Worked Example</h3>
+    <p>
+      A women's international size M top corresponds to roughly a US 8 to 10, a UK 12 to 14,
+      and an EU 40 to 42, based on the general reference table above.
+    </p>
+  </Fragment>
+</ToolLayout>

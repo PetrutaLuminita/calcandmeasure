@@ -1,0 +1,230 @@
+---
+import ToolLayout from '../layouts/ToolLayout.astro';
+
+const title = 'Unit Converter | Calc and Measure';
+const description =
+  'Convert length, weight, volume, and temperature between common metric and imperial units.';
+const summary =
+  'Choose a category (length, weight, volume, or temperature), pick a "from" and "to" unit, and enter a value to convert it instantly, with the formula shown for temperature conversions.';
+
+const faq = [
+  {
+    question: 'What units does this converter support?',
+    answer:
+      'Length (millimeters, centimeters, meters, kilometers, inches, feet, yards, miles), weight (milligrams, grams, kilograms, ounces, pounds, stone, metric tons), volume (milliliters, liters, teaspoons, tablespoons, cups, US fluid ounces, pints, quarts, US gallons), and temperature (Celsius, Fahrenheit, Kelvin).',
+  },
+  {
+    question: 'How are temperature conversions different from the other categories?',
+    answer:
+      'Length, weight, and volume conversions multiply a value by a fixed ratio. Temperature scales have different starting points (zero points), so converting requires addition and multiplication, not just a single ratio.',
+  },
+  {
+    question: 'What is the formula for Celsius to Fahrenheit?',
+    answer: 'Fahrenheit equals Celsius times 9/5, plus 32.',
+  },
+  {
+    question: 'What is the formula for Celsius to Kelvin?',
+    answer: 'Kelvin equals Celsius plus 273.15. Kelvin has no negative values since it starts at absolute zero.',
+  },
+  {
+    question: 'Are the volume units US or metric measurements?',
+    answer:
+      'Cups, tablespoons, teaspoons, fluid ounces, pints, quarts, and gallons here use US customary measurements, since those are the most commonly searched. Milliliters and liters are metric and are unaffected by this.',
+  },
+];
+---
+
+<ToolLayout title={title} description={description} slug="unit-converter" summary={summary} faq={faq}>
+  <Fragment slot="tool">
+    <form class="calc-box" id="unit-form" novalidate>
+      <div class="field-row">
+        <div class="field" style="flex-basis:100%;">
+          <label for="category-select">Category</label>
+          <select id="category-select">
+            <option value="length">Length</option>
+            <option value="weight">Weight / Mass</option>
+            <option value="volume">Volume</option>
+            <option value="temperature">Temperature</option>
+          </select>
+        </div>
+      </div>
+      <div class="field-row">
+        <div class="field" id="value-field">
+          <label for="value-input">Value</label>
+          <input type="number" id="value-input" step="any" value="1" required />
+          <span class="error-msg" id="value-error">Enter a number.</span>
+        </div>
+        <div class="field">
+          <label for="from-select">From</label>
+          <select id="from-select"></select>
+        </div>
+        <div class="field">
+          <label for="to-select">To</label>
+          <select id="to-select"></select>
+        </div>
+      </div>
+      <button type="submit" class="btn">Convert</button>
+    </form>
+
+    <div class="result-box" id="result-box" hidden>
+      <div class="result-headline" id="result-headline"></div>
+      <div class="result-row" id="formula-row" hidden>
+        <span>Formula used</span>
+        <span class="value" id="result-formula"></span>
+      </div>
+    </div>
+
+    <script>
+      type UnitDef = { label: string; toBase: number };
+      const linearCategories: Record<string, Record<string, UnitDef>> = {
+        length: {
+          mm: { label: 'Millimeters', toBase: 0.001 },
+          cm: { label: 'Centimeters', toBase: 0.01 },
+          m: { label: 'Meters', toBase: 1 },
+          km: { label: 'Kilometers', toBase: 1000 },
+          in: { label: 'Inches', toBase: 0.0254 },
+          ft: { label: 'Feet', toBase: 0.3048 },
+          yd: { label: 'Yards', toBase: 0.9144 },
+          mi: { label: 'Miles', toBase: 1609.344 },
+        },
+        weight: {
+          mg: { label: 'Milligrams', toBase: 0.001 },
+          g: { label: 'Grams', toBase: 1 },
+          kg: { label: 'Kilograms', toBase: 1000 },
+          oz: { label: 'Ounces', toBase: 28.349523125 },
+          lb: { label: 'Pounds', toBase: 453.59237 },
+          st: { label: 'Stone', toBase: 6350.29318 },
+          t: { label: 'Metric Tons', toBase: 1000000 },
+        },
+        volume: {
+          ml: { label: 'Milliliters', toBase: 1 },
+          l: { label: 'Liters', toBase: 1000 },
+          tsp: { label: 'Teaspoons', toBase: 4.92892 },
+          tbsp: { label: 'Tablespoons', toBase: 14.7868 },
+          cup: { label: 'Cups', toBase: 236.588 },
+          floz: { label: 'US Fluid Ounces', toBase: 29.5735 },
+          pt: { label: 'Pints', toBase: 473.176 },
+          qt: { label: 'Quarts', toBase: 946.353 },
+          gal: { label: 'US Gallons', toBase: 3785.41 },
+        },
+      };
+
+      const tempUnits: Record<string, string> = {
+        c: 'Celsius',
+        f: 'Fahrenheit',
+        k: 'Kelvin',
+      };
+
+      function toCelsius(value: number, unit: string) {
+        if (unit === 'c') return value;
+        if (unit === 'f') return ((value - 32) * 5) / 9;
+        return value - 273.15;
+      }
+
+      function fromCelsius(celsius: number, unit: string) {
+        if (unit === 'c') return celsius;
+        if (unit === 'f') return (celsius * 9) / 5 + 32;
+        return celsius + 273.15;
+      }
+
+      const categorySelect = document.getElementById('category-select') as HTMLSelectElement;
+      const fromSelect = document.getElementById('from-select') as HTMLSelectElement;
+      const toSelect = document.getElementById('to-select') as HTMLSelectElement;
+      const valueInput = document.getElementById('value-input') as HTMLInputElement;
+      const valueField = document.getElementById('value-field') as HTMLElement;
+      const form = document.getElementById('unit-form') as HTMLFormElement;
+      const resultBox = document.getElementById('result-box') as HTMLElement;
+      const headline = document.getElementById('result-headline') as HTMLElement;
+      const formulaRow = document.getElementById('formula-row') as HTMLElement;
+      const formulaEl = document.getElementById('result-formula') as HTMLElement;
+
+      function populateUnits() {
+        const category = categorySelect.value;
+        fromSelect.innerHTML = '';
+        toSelect.innerHTML = '';
+
+        if (category === 'temperature') {
+          Object.entries(tempUnits).forEach(([key, label]) => {
+            fromSelect.add(new Option(label, key));
+            toSelect.add(new Option(label, key));
+          });
+          fromSelect.value = 'c';
+          toSelect.value = 'f';
+        } else {
+          const units = linearCategories[category];
+          Object.entries(units).forEach(([key, def]) => {
+            fromSelect.add(new Option(def.label, key));
+            toSelect.add(new Option(def.label, key));
+          });
+          const keys = Object.keys(units);
+          fromSelect.value = keys[0];
+          toSelect.value = keys[1];
+        }
+        resultBox.hidden = true;
+      }
+
+      categorySelect.addEventListener('change', populateUnits);
+      populateUnits();
+
+      form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        valueField.classList.remove('has-error');
+        const value = parseFloat(valueInput.value);
+        if (Number.isNaN(value)) {
+          valueField.classList.add('has-error');
+          resultBox.hidden = true;
+          return;
+        }
+
+        const category = categorySelect.value;
+        const fromUnit = fromSelect.value;
+        const toUnit = toSelect.value;
+        let result: number;
+
+        if (category === 'temperature') {
+          const celsius = toCelsius(value, fromUnit);
+          result = fromCelsius(celsius, toUnit);
+          formulaRow.hidden = false;
+          if (fromUnit === 'c' && toUnit === 'f') {
+            formulaEl.textContent = 'F = C x 9/5 + 32';
+          } else if (fromUnit === 'c' && toUnit === 'k') {
+            formulaEl.textContent = 'K = C + 273.15';
+          } else {
+            formulaEl.textContent = 'Converted via Celsius as a common reference point';
+          }
+        } else {
+          const units = linearCategories[category];
+          const baseValue = value * units[fromUnit].toBase;
+          result = baseValue / units[toUnit].toBase;
+          formulaRow.hidden = true;
+        }
+
+        const rounded = Math.round(result * 100000) / 100000;
+        const fromLabel = category === 'temperature' ? tempUnits[fromUnit] : linearCategories[category][fromUnit].label;
+        const toLabel = category === 'temperature' ? tempUnits[toUnit] : linearCategories[category][toUnit].label;
+        headline.textContent = `${value} ${fromLabel} = ${rounded.toLocaleString()} ${toLabel}`;
+        resultBox.hidden = false;
+      });
+    </script>
+  </Fragment>
+
+  <Fragment slot="how-it-works">
+    <h2>How It Works</h2>
+    <p>
+      Length, weight, and volume conversions work by converting the input value to a common
+      base unit (meters, grams, or milliliters), then converting that base value to the target
+      unit. Temperature conversions use dedicated formulas since Celsius, Fahrenheit, and Kelvin
+      do not share a common zero point.
+    </p>
+    <h3>Worked Example</h3>
+    <p>
+      To convert 10 miles to kilometers: 10 miles times 1609.344 (meters per mile) equals
+      16,093.44 meters, and 16,093.44 meters divided by 1,000 (meters per kilometer) equals
+      16.09344 kilometers.
+    </p>
+    <p>
+      To convert 100 degrees Celsius to Fahrenheit: 100 times 9/5 equals 180, plus 32 equals
+      212 degrees Fahrenheit, the boiling point of water at sea level.
+    </p>
+  </Fragment>
+</ToolLayout>

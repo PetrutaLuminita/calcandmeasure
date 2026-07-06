@@ -1,0 +1,170 @@
+---
+import ToolLayout from '../layouts/ToolLayout.astro';
+
+const title = 'Tip Calculator | Calc and Measure';
+const description =
+  'Calculate a tip amount, total bill, and cost per person when splitting a check between any number of people.';
+const summary =
+  'Enter your bill amount, choose or type a tip percentage, and set the number of people splitting the bill to get the tip amount, the total with tip, and the amount each person owes.';
+
+const faq = [
+  {
+    question: 'How is the tip amount calculated?',
+    answer: 'The tip amount is the bill amount multiplied by the tip percentage divided by 100.',
+  },
+  {
+    question: 'How is the amount per person worked out?',
+    answer:
+      'The total bill, which is the original bill plus the tip, is divided evenly by the number of people splitting it. This assumes everyone pays an equal share.',
+  },
+  {
+    question: 'What is a typical tip percentage?',
+    answer:
+      'In the United States, 15 to 20 percent is common for restaurant service. Norms vary by country and by type of service, so use the custom field if the quick-select buttons do not match your situation.',
+  },
+  {
+    question: 'Should I tip on the pre-tax or post-tax amount?',
+    answer:
+      'This is a personal preference. Some people tip on the subtotal before tax, others tip on the total including tax. Enter whichever bill amount you want to base the tip on.',
+  },
+  {
+    question: 'Can I split the bill unevenly between people?',
+    answer:
+      'This calculator splits the total evenly across the number of people you enter. For an uneven split, calculate each person\'s share separately based on what they ordered.',
+  },
+];
+---
+
+<ToolLayout title={title} description={description} slug="tip-calculator" summary={summary} faq={faq}>
+  <Fragment slot="tool">
+    <form class="calc-box" id="tip-form" novalidate>
+      <div class="field-row">
+        <div class="field" id="bill-field">
+          <label for="bill-input">Bill amount ($)</label>
+          <input type="number" id="bill-input" name="bill" min="0" step="0.01" required />
+          <span class="error-msg" id="bill-error">Enter a bill amount of 0 or more.</span>
+        </div>
+        <div class="field" id="people-field">
+          <label for="people-input">Number of people</label>
+          <input type="number" id="people-input" name="people" min="1" step="1" value="1" required />
+          <span class="error-msg" id="people-error">Enter at least 1 person.</span>
+        </div>
+      </div>
+
+      <div class="field" style="margin-bottom:16px;">
+        <label>Tip percentage</label>
+        <div class="quick-tips" role="group" aria-label="Quick select tip percentage">
+          <button type="button" class="btn btn-secondary" data-tip="10" aria-pressed="false">10%</button>
+          <button type="button" class="btn btn-secondary" data-tip="15" aria-pressed="false">15%</button>
+          <button type="button" class="btn btn-secondary" data-tip="18" aria-pressed="true">18%</button>
+          <button type="button" class="btn btn-secondary" data-tip="20" aria-pressed="false">20%</button>
+        </div>
+      </div>
+
+      <div class="field-row">
+        <div class="field" id="custom-tip-field">
+          <label for="custom-tip-input">Custom tip percentage</label>
+          <input type="number" id="custom-tip-input" name="customTip" min="0" step="0.1" value="18" />
+        </div>
+      </div>
+
+      <button type="submit" class="btn">Calculate tip</button>
+    </form>
+
+    <div class="result-box" id="result-box" hidden>
+      <div class="result-headline" id="result-headline"></div>
+      <div class="result-row">
+        <span>Tip amount</span>
+        <span class="value" id="result-tip"></span>
+      </div>
+      <div class="result-row">
+        <span>Total with tip</span>
+        <span class="value" id="result-total"></span>
+      </div>
+      <div class="result-row">
+        <span>Amount per person</span>
+        <span class="value" id="result-per-person"></span>
+      </div>
+    </div>
+
+    <script>
+      const form = document.getElementById('tip-form') as HTMLFormElement;
+      const billInput = document.getElementById('bill-input') as HTMLInputElement;
+      const peopleInput = document.getElementById('people-input') as HTMLInputElement;
+      const billField = document.getElementById('bill-field') as HTMLElement;
+      const peopleField = document.getElementById('people-field') as HTMLElement;
+      const customTipInput = document.getElementById('custom-tip-input') as HTMLInputElement;
+      const quickButtons = document.querySelectorAll<HTMLButtonElement>('.quick-tips button');
+      const resultBox = document.getElementById('result-box') as HTMLElement;
+      const headline = document.getElementById('result-headline') as HTMLElement;
+      const tipEl = document.getElementById('result-tip') as HTMLElement;
+      const totalEl = document.getElementById('result-total') as HTMLElement;
+      const perPersonEl = document.getElementById('result-per-person') as HTMLElement;
+
+      const money = (n: number) => `$${n.toFixed(2)}`;
+
+      quickButtons.forEach((btn) => {
+        btn.addEventListener('click', () => {
+          quickButtons.forEach((b) => b.setAttribute('aria-pressed', 'false'));
+          btn.setAttribute('aria-pressed', 'true');
+          customTipInput.value = btn.dataset.tip ?? '0';
+        });
+      });
+
+      customTipInput.addEventListener('input', () => {
+        quickButtons.forEach((b) => {
+          b.setAttribute('aria-pressed', b.dataset.tip === customTipInput.value ? 'true' : 'false');
+        });
+      });
+
+      form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        billField.classList.remove('has-error');
+        peopleField.classList.remove('has-error');
+
+        const bill = parseFloat(billInput.value);
+        const people = parseInt(peopleInput.value, 10);
+        const tipPct = parseFloat(customTipInput.value);
+        let hasError = false;
+
+        if (Number.isNaN(bill) || bill < 0) {
+          billField.classList.add('has-error');
+          hasError = true;
+        }
+        if (Number.isNaN(people) || people < 1) {
+          peopleField.classList.add('has-error');
+          hasError = true;
+        }
+        if (hasError) {
+          resultBox.hidden = true;
+          return;
+        }
+
+        const tipAmount = bill * (tipPct / 100);
+        const total = bill + tipAmount;
+        const perPerson = total / people;
+
+        headline.textContent = `${tipPct}% tip on ${money(bill)}`;
+        tipEl.textContent = money(tipAmount);
+        totalEl.textContent = money(total);
+        perPersonEl.textContent = money(perPerson);
+        resultBox.hidden = false;
+      });
+    </script>
+  </Fragment>
+
+  <Fragment slot="how-it-works">
+    <h2>How It Works</h2>
+    <p>
+      The tip amount is the bill multiplied by the tip percentage divided by 100. The total is
+      the bill plus that tip. The amount per person is the total divided by the number of
+      people splitting it evenly.
+    </p>
+    <h3>Worked Example</h3>
+    <p>
+      A $84 bill with an 18 percent tip and 3 people splitting it works out as follows. Tip: 84
+      times 0.18 equals $15.12. Total: 84 plus 15.12 equals $99.12. Per person: 99.12 divided by
+      3 equals $33.04.
+    </p>
+  </Fragment>
+</ToolLayout>

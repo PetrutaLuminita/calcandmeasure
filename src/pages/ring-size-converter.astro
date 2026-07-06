@@ -1,0 +1,190 @@
+---
+import ToolLayout from '../layouts/ToolLayout.astro';
+
+const title = 'Ring Size Converter | Calc and Measure';
+const description =
+  'Convert ring sizes between US, UK, and EU sizing, with internal diameter and circumference in millimeters.';
+const summary =
+  'Choose the sizing system you already know, select your size, and see the equivalent US, UK, and EU ring size along with the internal diameter and circumference in millimeters.';
+
+const sizes = [
+  { us: '3', uk: 'F', eu: '44', diameter: '14.1', circumference: '44.2' },
+  { us: '3.5', uk: 'G', eu: '45', diameter: '14.5', circumference: '45.5' },
+  { us: '4', uk: 'H', eu: '46.5', diameter: '14.9', circumference: '46.8' },
+  { us: '4.5', uk: 'I', eu: '47.5', diameter: '15.3', circumference: '48.0' },
+  { us: '5', uk: 'J', eu: '49', diameter: '15.7', circumference: '49.3' },
+  { us: '5.5', uk: 'K', eu: '50', diameter: '16.1', circumference: '50.6' },
+  { us: '6', uk: 'L', eu: '51.5', diameter: '16.5', circumference: '51.9' },
+  { us: '6.5', uk: 'M', eu: '52.5', diameter: '16.9', circumference: '53.1' },
+  { us: '7', uk: 'N', eu: '54', diameter: '17.3', circumference: '54.4' },
+  { us: '7.5', uk: 'O', eu: '55', diameter: '17.7', circumference: '55.7' },
+  { us: '8', uk: 'P', eu: '56.5', diameter: '18.1', circumference: '57.0' },
+  { us: '8.5', uk: 'Q', eu: '57.5', diameter: '18.5', circumference: '58.3' },
+  { us: '9', uk: 'R', eu: '59', diameter: '18.9', circumference: '59.5' },
+  { us: '9.5', uk: 'S', eu: '60', diameter: '19.3', circumference: '60.8' },
+  { us: '10', uk: 'T', eu: '61.5', diameter: '19.7', circumference: '62.1' },
+  { us: '10.5', uk: 'U', eu: '62.5', diameter: '20.1', circumference: '63.4' },
+  { us: '11', uk: 'V', eu: '64', diameter: '20.5', circumference: '64.6' },
+  { us: '11.5', uk: 'W', eu: '65.5', diameter: '20.9', circumference: '65.9' },
+  { us: '12', uk: 'X', eu: '66.5', diameter: '21.3', circumference: '67.2' },
+  { us: '13', uk: 'Z', eu: '69.5', diameter: '22.2', circumference: '69.7' },
+];
+
+const faq = [
+  {
+    question: 'How is ring size actually measured?',
+    answer:
+      'Ring size is based on the internal diameter or internal circumference of the band, that is, the measurement of the hole the finger goes through, not the outside of the ring.',
+  },
+  {
+    question: 'Is a ring size chart the same in every country?',
+    answer:
+      'No. The US, UK, and EU use entirely different numbering systems for the same physical size, which is why a conversion table like this one is needed. Some countries also use their own local sizing standards not covered here.',
+  },
+  {
+    question: 'Can I measure my ring size at home?',
+    answer:
+      'Yes. Wrap a strip of paper or string around your finger, mark where it overlaps, measure that length in millimeters, and compare it to the circumference column in the table.',
+  },
+  {
+    question: 'Do ring sizes vary between jewelers?',
+    answer:
+      'Slightly. This table reflects standard, widely used reference values, but exact measurements can differ a little between jewelers and countries. When in doubt, get measured in person for an important purchase.',
+  },
+];
+---
+
+<ToolLayout title={title} description={description} slug="ring-size-converter" summary={summary} faq={faq}>
+  <Fragment slot="tool">
+    <form class="calc-box" id="ring-form" novalidate>
+      <div class="field-row">
+        <div class="field">
+          <label for="system-select">I know my size in</label>
+          <select id="system-select">
+            <option value="us">US</option>
+            <option value="uk">UK</option>
+            <option value="eu">EU</option>
+            <option value="diameter">Diameter (mm)</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="size-select">Size</label>
+          <select id="size-select"></select>
+        </div>
+      </div>
+      <button type="submit" class="btn">Convert</button>
+    </form>
+
+    <div class="result-box" id="result-box" hidden>
+      <div class="result-headline" id="result-headline"></div>
+      <div class="result-row">
+        <span>US size</span>
+        <span class="value" id="result-us"></span>
+      </div>
+      <div class="result-row">
+        <span>UK size</span>
+        <span class="value" id="result-uk"></span>
+      </div>
+      <div class="result-row">
+        <span>EU size</span>
+        <span class="value" id="result-eu"></span>
+      </div>
+      <div class="result-row">
+        <span>Internal diameter</span>
+        <span class="value" id="result-diameter"></span>
+      </div>
+      <div class="result-row">
+        <span>Internal circumference</span>
+        <span class="value" id="result-circumference"></span>
+      </div>
+    </div>
+
+    <script define:vars={{ sizes }}>
+      const systemSelect = document.getElementById('system-select');
+      const sizeSelect = document.getElementById('size-select');
+      const form = document.getElementById('ring-form');
+      const resultBox = document.getElementById('result-box');
+      const headline = document.getElementById('result-headline');
+      const usEl = document.getElementById('result-us');
+      const ukEl = document.getElementById('result-uk');
+      const euEl = document.getElementById('result-eu');
+      const diameterEl = document.getElementById('result-diameter');
+      const circumferenceEl = document.getElementById('result-circumference');
+
+      function populateSizes() {
+        const system = systemSelect.value;
+        sizeSelect.innerHTML = '';
+        sizes.forEach((row) => {
+          const value = system === 'diameter' ? row.diameter : row[system];
+          sizeSelect.add(new Option(value, value));
+        });
+        resultBox.hidden = true;
+      }
+
+      systemSelect.addEventListener('change', populateSizes);
+      populateSizes();
+
+      form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const system = systemSelect.value;
+        const value = sizeSelect.value;
+        const row = sizes.find((r) => (system === 'diameter' ? r.diameter === value : r[system] === value));
+        if (!row) {
+          resultBox.hidden = true;
+          return;
+        }
+        headline.textContent = `Ring size: ${system === 'diameter' ? value + ' mm' : value}`;
+        usEl.textContent = row.us;
+        ukEl.textContent = row.uk;
+        euEl.textContent = row.eu;
+        diameterEl.textContent = `${row.diameter} mm`;
+        circumferenceEl.textContent = `${row.circumference} mm`;
+        resultBox.hidden = false;
+      });
+    </script>
+  </Fragment>
+
+  <Fragment slot="how-it-works">
+    <h2>How It Works</h2>
+    <p>
+      Ring size is based on the internal diameter and circumference of the band. This tool
+      looks up your chosen size in a standard reference table and returns the matching size in
+      every other system, since ring sizing is a matter of established convention rather than a
+      single convertible formula.
+    </p>
+    <p class="disclaimer">
+      Ring sizing can vary slightly by country and jeweler. These are standard, widely accepted
+      reference values.
+    </p>
+    <h3>Reference Table</h3>
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th scope="col">US</th>
+            <th scope="col">UK</th>
+            <th scope="col">EU</th>
+            <th scope="col">Diameter (mm)</th>
+            <th scope="col">Circumference (mm)</th>
+          </tr>
+        </thead>
+        <tbody>
+          {sizes.map((row) => (
+            <tr>
+              <td>{row.us}</td>
+              <td>{row.uk}</td>
+              <td>{row.eu}</td>
+              <td>{row.diameter}</td>
+              <td>{row.circumference}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+    <h3>Worked Example</h3>
+    <p>
+      A US ring size 7 has an internal diameter of about 17.3 millimeters and a circumference
+      of about 54.4 millimeters, which corresponds to a UK size N and an EU size 54.
+    </p>
+  </Fragment>
+</ToolLayout>

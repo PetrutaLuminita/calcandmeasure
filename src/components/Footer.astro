@@ -1,0 +1,43 @@
+---
+import { tools } from '../data/tools.js';
+
+const everyday = tools.filter((t) => t.category === 'Everyday Calculators');
+const converters = tools.filter((t) => t.category === 'Converters');
+const year = new Date().getFullYear();
+---
+
+<footer class="site-footer">
+  <div class="wrap">
+    <div class="footer-grid">
+      <div>
+        <h4>Everyday Calculators</h4>
+        <ul>
+          {everyday.map((tool) => (
+            <li><a href={`/${tool.slug}`}>{tool.name}</a></li>
+          ))}
+        </ul>
+      </div>
+      <div>
+        <h4>Converters</h4>
+        <ul>
+          {converters.map((tool) => (
+            <li><a href={`/${tool.slug}`}>{tool.name}</a></li>
+          ))}
+        </ul>
+      </div>
+      <div>
+        <h4>Site</h4>
+        <ul>
+          <li><a href="/about">About</a></li>
+          <li><a href="/contact">Contact</a></li>
+          <li><a href="/privacy-policy">Privacy Policy</a></li>
+          <li><a href="/terms">Terms</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>&copy; {year} Calc and Measure</span>
+      <span>Simple calculators and unit converters, no sign-up needed.</span>
+    </div>
+  </div>
+</footer>

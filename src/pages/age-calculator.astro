@@ -1,0 +1,204 @@
+---
+import ToolLayout from '../layouts/ToolLayout.astro';
+
+const title = 'Age Calculator | Calc and Measure';
+const description =
+  'Calculate your exact age in years, months, and days from your date of birth, plus total days lived and days until your next birthday.';
+const summary =
+  'Enter a date of birth and this tool works out your exact age in years, months, and days as of today or any date you choose, along with the total number of days you have lived and the number of days left until your next birthday.';
+
+const faq = [
+  {
+    question: 'Does this calculator count leap years?',
+    answer:
+      'Yes. The age is worked out using real calendar dates, so leap years are handled automatically because February 29 exists in the calendar for leap years and simply does not exist in others.',
+  },
+  {
+    question: 'Why does my age in months and days look different from a simple day count?',
+    answer:
+      'This tool calculates age the way a calendar does, by comparing year, month, and day values directly, rather than dividing total days by 30 or 365. That means the months and days shown match how you would count age by hand on a calendar.',
+  },
+  {
+    question: 'Can I calculate my age as of a future or past date instead of today?',
+    answer:
+      'Yes. Use the "As of date" field to pick any date, and the calculator will show your age, total days lived, and days to the next birthday relative to that date instead of today.',
+  },
+  {
+    question: 'What happens if I was born on February 29?',
+    answer:
+      'Your birthday is treated as falling on February 29 in leap years. In non-leap years, the calculator counts the next birthday as March 1, which is the standard convention most calendars and record systems use.',
+  },
+  {
+    question: 'Is this calculator accurate for legal or medical age requirements?',
+    answer:
+      'The math is accurate for standard calendar age, but always check the specific rule for your situation. Some legal contexts (such as when someone turns a certain age) have their own definitions that can differ slightly from calendar age.',
+  },
+];
+---
+
+<ToolLayout title={title} description={description} slug="age-calculator" summary={summary} faq={faq}>
+  <Fragment slot="tool">
+    <form class="calc-box" id="age-form" novalidate>
+      <div class="field-row">
+        <div class="field" id="dob-field">
+          <label for="dob-input">Date of birth</label>
+          <input type="date" id="dob-input" name="dob" required />
+          <span class="error-msg" id="dob-error">Enter a valid date of birth that is not in the future.</span>
+        </div>
+        <div class="field" id="asof-field">
+          <label for="asof-input">As of date</label>
+          <input type="date" id="asof-input" name="asof" required />
+          <span class="error-msg" id="asof-error">Enter a valid date that is on or after the date of birth.</span>
+        </div>
+      </div>
+      <button type="submit" class="btn">Calculate age</button>
+    </form>
+
+    <div class="result-box" id="result-box" hidden>
+      <div class="result-headline" id="result-headline"></div>
+      <div class="result-row">
+        <span>Total days lived</span>
+        <span class="value" id="result-total-days"></span>
+      </div>
+      <div class="result-row">
+        <span>Days until next birthday</span>
+        <span class="value" id="result-next-birthday"></span>
+      </div>
+    </div>
+
+    <script>
+      const form = document.getElementById('age-form') as HTMLFormElement;
+      const dobInput = document.getElementById('dob-input') as HTMLInputElement;
+      const asofInput = document.getElementById('asof-input') as HTMLInputElement;
+      const dobField = document.getElementById('dob-field') as HTMLElement;
+      const asofField = document.getElementById('asof-field') as HTMLElement;
+      const resultBox = document.getElementById('result-box') as HTMLElement;
+      const headline = document.getElementById('result-headline') as HTMLElement;
+      const totalDaysEl = document.getElementById('result-total-days') as HTMLElement;
+      const nextBirthdayEl = document.getElementById('result-next-birthday') as HTMLElement;
+
+      function localTodayISO() {
+        const d = new Date();
+        const y = d.getFullYear();
+        const m = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        return `${y}-${m}-${day}`;
+      }
+
+      const todayStr = localTodayISO();
+      asofInput.value = todayStr;
+      dobInput.max = todayStr;
+
+      function daysInMonth(year: number, monthIndex: number) {
+        return new Date(year, monthIndex + 1, 0).getDate();
+      }
+
+      function parseDateInput(value: string) {
+        const [y, m, d] = value.split('-').map(Number);
+        return new Date(y, m - 1, d);
+      }
+
+      function calculate(dob: Date, asOf: Date) {
+        let years = asOf.getFullYear() - dob.getFullYear();
+        let months = asOf.getMonth() - dob.getMonth();
+        let days = asOf.getDate() - dob.getDate();
+
+        if (days < 0) {
+          let prevMonth = asOf.getMonth() - 1;
+          let prevYear = asOf.getFullYear();
+          if (prevMonth < 0) {
+            prevMonth = 11;
+            prevYear -= 1;
+          }
+          days += daysInMonth(prevYear, prevMonth);
+          months -= 1;
+        }
+        if (months < 0) {
+          months += 12;
+          years -= 1;
+        }
+
+        const msPerDay = 24 * 60 * 60 * 1000;
+        const dobUTC = Date.UTC(dob.getFullYear(), dob.getMonth(), dob.getDate());
+        const asOfUTC = Date.UTC(asOf.getFullYear(), asOf.getMonth(), asOf.getDate());
+        const totalDays = Math.round((asOfUTC - dobUTC) / msPerDay);
+
+        let nextBirthday = new Date(asOf.getFullYear(), dob.getMonth(), dob.getDate());
+        if (nextBirthday.getTime() < asOf.getTime()) {
+          nextBirthday = new Date(asOf.getFullYear() + 1, dob.getMonth(), dob.getDate());
+        }
+        const nextBirthdayUTC = Date.UTC(
+          nextBirthday.getFullYear(),
+          nextBirthday.getMonth(),
+          nextBirthday.getDate()
+        );
+        const daysToNext = Math.round((nextBirthdayUTC - asOfUTC) / msPerDay);
+
+        return { years, months, days, totalDays, daysToNext };
+      }
+
+      form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        dobField.classList.remove('has-error');
+        asofField.classList.remove('has-error');
+
+        const dobVal = dobInput.value;
+        const asofVal = asofInput.value;
+        let hasError = false;
+
+        if (!dobVal) {
+          dobField.classList.add('has-error');
+          hasError = true;
+        }
+        if (!asofVal) {
+          asofField.classList.add('has-error');
+          hasError = true;
+        }
+        if (hasError) {
+          resultBox.hidden = true;
+          return;
+        }
+
+        const dob = parseDateInput(dobVal);
+        const asOf = parseDateInput(asofVal);
+
+        if (dob.getTime() > asOf.getTime()) {
+          dobField.classList.add('has-error');
+          resultBox.hidden = true;
+          return;
+        }
+
+        const { years, months, days, totalDays, daysToNext } = calculate(dob, asOf);
+
+        const plural = (n: number, word: string) => `${n} ${word}${n === 1 ? '' : 's'}`;
+        headline.textContent = `${plural(years, 'year')}, ${plural(months, 'month')}, ${plural(days, 'day')}`;
+        totalDaysEl.textContent = totalDays.toLocaleString();
+        nextBirthdayEl.textContent = daysToNext === 0 ? 'Today' : `${daysToNext.toLocaleString()} days`;
+        resultBox.hidden = false;
+      });
+    </script>
+  </Fragment>
+
+  <Fragment slot="how-it-works">
+    <h2>How It Works</h2>
+    <p>
+      This calculator compares the year, month, and day of your date of birth with the year,
+      month, and day of the "as of" date, the same way you would count age by hand on a
+      calendar. It does not simply divide total days by 365, which would give a slightly
+      wrong answer because months have different lengths and leap years add an extra day.
+    </p>
+    <p>
+      The calculation subtracts year from year, month from month, and day from day. If the
+      day subtraction goes negative, it borrows days from the previous month. If the month
+      subtraction goes negative, it borrows a year and adds 12 months.
+    </p>
+    <h3>Worked Example</h3>
+    <p>
+      Someone born on May 20, 1990 checking their age on July 7, 2026, would be calculated as
+      follows. Years: 2026 minus 1990 equals 36. Months: July (7) minus May (5) equals 2. Days:
+      7 minus 20 is negative, so the calculator borrows the days in June (30) giving 7 plus 30
+      minus 20 equals 17 days, and reduces the month count by one, from 2 to 1. The result is 36
+      years, 1 month, and 17 days old.
+    </p>
+  </Fragment>
+</ToolLayout>

@@ -1,0 +1,54 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import AdSlot from '../components/AdSlot.astro';
+import { tools } from '../data/tools.js';
+
+const everyday = tools.filter((t) => t.category === 'Everyday Calculators');
+const converters = tools.filter((t) => t.category === 'Converters');
+
+const title = 'Calc and Measure | Free Online Calculators and Converters';
+const description =
+  'Simple calculators and unit converters, no sign-up needed. Free tools for age, percentage, tips, GPA, units, sizes, and cooking measurements.';
+
+const schema = {
+  '@context': 'https://schema.org',
+  '@type': 'WebSite',
+  name: 'Calc and Measure',
+  url: 'https://calcandmeasure.com',
+};
+---
+
+<BaseLayout title={title} description={description} path="/" schema={schema}>
+  <h1>Calc and Measure</h1>
+  <p class="tagline">Simple calculators and unit converters, no sign-up needed.</p>
+
+  <p class="section-intro">
+    Ten free tools for everyday math and unit conversion. Pick one below. Every tool runs
+    right on this page, gives you a plain explanation of the formula it uses, and needs
+    no account or download.
+  </p>
+
+  <AdSlot position="home-top" />
+
+  <h2 class="category-heading" id="everyday-calculators">Everyday Calculators</h2>
+  <div class="tool-grid">
+    {everyday.map((tool) => (
+      <a class="tool-card" href={`/${tool.slug}`}>
+        <h3>{tool.name}</h3>
+        <p>{tool.description}</p>
+      </a>
+    ))}
+  </div>
+
+  <h2 class="category-heading" id="converters">Converters</h2>
+  <div class="tool-grid">
+    {converters.map((tool) => (
+      <a class="tool-card" href={`/${tool.slug}`}>
+        <h3>{tool.name}</h3>
+        <p>{tool.description}</p>
+      </a>
+    ))}
+  </div>
+
+  <AdSlot position="home-bottom" />
+</BaseLayout>

@@ -1,0 +1,54 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+
+const title = 'About | Calc and Measure';
+const description =
+  'Learn what Calc and Measure is, who runs it, and why it exists: free, fast, no sign-up calculators and converters.';
+const path = '/about';
+
+const schema = {
+  '@type': 'BreadcrumbList',
+  itemListElement: [
+    { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://calcandmeasure.com' },
+    { '@type': 'ListItem', position: 2, name: 'About', item: 'https://calcandmeasure.com/about' },
+  ],
+};
+---
+
+<BaseLayout title={title} description={description} path={path} schema={schema}>
+  <nav class="breadcrumbs" aria-label="Breadcrumb">
+    <a href="/">Home</a>
+    <span class="sep">&gt;</span>
+    <span aria-current="page">About</span>
+  </nav>
+
+  <h1>About Calc and Measure</h1>
+
+  <p>
+    Calc and Measure is a small, independently run site with one job: give you a fast,
+    accurate answer to a everyday math or conversion question without making you sign up,
+    install anything, or dig through a cluttered page to find it.
+  </p>
+  <p>
+    It was built because so many calculator sites bury a simple tool under walls of ads,
+    autoplay video, and pop-ups before you can even see the input field. Every tool here loads
+    quickly, works on a phone as well as a desktop, and explains the formula behind the
+    answer in plain language, so you can check the math yourself or learn something along the
+    way.
+  </p>
+  <p>
+    The site covers ten tools split into two groups: everyday calculators (age, days between
+    dates, percentages, tips, and GPA) and converters (units, shoe sizes, ring sizes, clothing
+    sizes, and cooking measurements). All of them run directly in your browser. No data you
+    enter is sent to a server or stored anywhere.
+  </p>
+  <p>
+    The site is supported by display advertising, which is what keeps every tool free to use
+    and free of accounts. You can read more about how that works in the
+    <a href="/privacy-policy">Privacy Policy</a>.
+  </p>
+  <p>
+    Found an error in a formula or a reference table, or have an idea for a tool that should
+    be added? Get in touch on the <a href="/contact">Contact</a> page.
+  </p>
+</BaseLayout>

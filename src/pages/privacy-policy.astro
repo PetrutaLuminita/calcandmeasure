@@ -1,0 +1,88 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+
+const title = 'Privacy Policy | Calc and Measure';
+const description = 'How Calc and Measure uses cookies, Google AdSense, and analytics, explained in plain language.';
+const path = '/privacy-policy';
+const lastUpdated = 'July 7, 2026';
+
+const schema = {
+  '@type': 'BreadcrumbList',
+  itemListElement: [
+    { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://calcandmeasure.com' },
+    { '@type': 'ListItem', position: 2, name: 'Privacy Policy', item: 'https://calcandmeasure.com/privacy-policy' },
+  ],
+};
+---
+
+<BaseLayout title={title} description={description} path={path} schema={schema}>
+  <nav class="breadcrumbs" aria-label="Breadcrumb">
+    <a href="/">Home</a>
+    <span class="sep">&gt;</span>
+    <span aria-current="page">Privacy Policy</span>
+  </nav>
+
+  <h1>Privacy Policy</h1>
+  <p class="disclaimer">Last updated: {lastUpdated}</p>
+
+  <p>
+    This page explains what data Calc and Measure collects, why, and how you can control it.
+    We have kept it in plain language rather than dense legal text.
+  </p>
+
+  <h2>What This Site Does Not Do</h2>
+  <p>
+    Every calculator and converter on this site runs entirely in your browser. Values you type
+    into a tool, like a date of birth, a bill amount, or a course grade, are never sent to a
+    server, stored in a database, or seen by anyone else. There is no account system and
+    nothing to sign up for.
+  </p>
+
+  <h2>Cookies</h2>
+  <p>
+    This site uses cookies for two purposes: to remember whether you have accepted or declined
+    the cookie notice, and to support the advertising described below. Your browser lets you
+    block or delete cookies at any time through its settings, though doing so may cause the
+    cookie banner to reappear on your next visit.
+  </p>
+
+  <h2>Google AdSense</h2>
+  <p>
+    This site shows ads served by Google AdSense. Google and its advertising partners may use
+    cookies and similar technologies to show ads based on your visits to this site and other
+    sites, in order to make ads more relevant to you. You can learn more about how Google uses
+    data from sites that use its services, and adjust your ad personalization settings, at
+    Google's <a href="https://policies.google.com/technologies/partner-sites" target="_blank" rel="noopener noreferrer">Ads and data</a> page.
+  </p>
+  <p>
+    Visitors in the European Economic Area and the United Kingdom are shown a consent banner
+    that lets you choose whether to allow personalized advertising, in line with Google's
+    certified consent requirements for those regions.
+  </p>
+
+  <h2>Analytics</h2>
+  <p>
+    This site may use a privacy-conscious analytics tool to understand overall traffic, such as
+    which pages are visited and roughly how many people visit, so the site can be improved. Any
+    analytics used here does not identify you personally and is separate from the advertising
+    cookies described above.
+  </p>
+
+  <h2>Children's Privacy</h2>
+  <p>
+    This site is not directed at children under 13 and does not knowingly collect personal
+    information from them.
+  </p>
+
+  <h2>Changes to This Policy</h2>
+  <p>
+    If this policy changes, the updated version will be posted on this page with a new "last
+    updated" date at the top.
+  </p>
+
+  <h2>Contact</h2>
+  <p>
+    Questions about this policy can be sent to
+    <a href="mailto:contact@calcandmeasure.com">contact@calcandmeasure.com</a>.
+  </p>
+</BaseLayout>

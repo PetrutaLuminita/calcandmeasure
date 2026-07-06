@@ -1,0 +1,183 @@
+---
+import ToolLayout from '../layouts/ToolLayout.astro';
+
+const title = 'Percentage Calculator | Calc and Measure';
+const description =
+  'Calculate percentages four ways: X percent of Y, what percent one number is of another, percentage change, and reverse percentages.';
+const summary =
+  'Pick a calculation mode, from finding a percentage of a number to working out percentage increase or decrease, and this tool returns the answer along with the formula it used.';
+
+const faq = [
+  {
+    question: 'What is the formula for finding X percent of Y?',
+    answer: 'Multiply Y by X divided by 100. For example, 20 percent of 50 is (20 / 100) times 50, which equals 10.',
+  },
+  {
+    question: 'How do I find what percent one number is of another?',
+    answer:
+      'Divide the first number by the second and multiply by 100. For example, to find what percent 15 is of 60, divide 15 by 60 and multiply by 100, which gives 25 percent.',
+  },
+  {
+    question: 'How is percentage increase or decrease calculated?',
+    answer:
+      'Subtract the original value from the new value, divide by the original value, and multiply by 100. A positive result is an increase and a negative result is a decrease.',
+  },
+  {
+    question: 'What does "Y is X percent of what number" mean?',
+    answer:
+      'This mode answers questions like "20 is 40 percent of what number?" It divides Y by X converted to a decimal (X / 100) to find the original whole number.',
+  },
+  {
+    question: 'Can I enter negative numbers or zero?',
+    answer:
+      'You can enter negative numbers where it makes sense, but the original value in a percentage change or reverse percentage calculation cannot be zero, since dividing by zero has no defined result.',
+  },
+];
+---
+
+<ToolLayout title={title} description={description} slug="percentage-calculator" summary={summary} faq={faq}>
+  <Fragment slot="tool">
+    <form class="calc-box" id="pct-form" novalidate>
+      <div class="field-row">
+        <div class="field" style="flex-basis:100%;">
+          <label for="mode-select">Calculation type</label>
+          <select id="mode-select" name="mode">
+            <option value="of">X% of Y</option>
+            <option value="what-percent">X is what percent of Y</option>
+            <option value="change">Percentage increase or decrease from X to Y</option>
+            <option value="reverse">Y is X% of what number</option>
+          </select>
+        </div>
+      </div>
+      <div class="field-row">
+        <div class="field" id="x-field">
+          <label for="x-input" id="x-label">X</label>
+          <input type="number" id="x-input" name="x" step="any" required />
+          <span class="error-msg" id="x-error">Enter a number.</span>
+        </div>
+        <div class="field" id="y-field">
+          <label for="y-input" id="y-label">Y</label>
+          <input type="number" id="y-input" name="y" step="any" required />
+          <span class="error-msg" id="y-error">Enter a number.</span>
+        </div>
+      </div>
+      <button type="submit" class="btn">Calculate</button>
+    </form>
+
+    <div class="result-box" id="result-box" hidden>
+      <div class="result-headline" id="result-headline"></div>
+      <div class="result-row">
+        <span>Formula used</span>
+        <span class="value" id="result-formula"></span>
+      </div>
+    </div>
+
+    <script>
+      const modeSelect = document.getElementById('mode-select') as HTMLSelectElement;
+      const xLabel = document.getElementById('x-label') as HTMLElement;
+      const yLabel = document.getElementById('y-label') as HTMLElement;
+      const xInput = document.getElementById('x-input') as HTMLInputElement;
+      const yInput = document.getElementById('y-input') as HTMLInputElement;
+      const xField = document.getElementById('x-field') as HTMLElement;
+      const yField = document.getElementById('y-field') as HTMLElement;
+      const form = document.getElementById('pct-form') as HTMLFormElement;
+      const resultBox = document.getElementById('result-box') as HTMLElement;
+      const headline = document.getElementById('result-headline') as HTMLElement;
+      const formulaEl = document.getElementById('result-formula') as HTMLElement;
+
+      const labels: Record<string, [string, string]> = {
+        of: ['X (percent)', 'Y (number)'],
+        'what-percent': ['X (number)', 'Y (number)'],
+        change: ['X (original value)', 'Y (new value)'],
+        reverse: ['X (percent)', 'Y (result)'],
+      };
+
+      function updateLabels() {
+        const [xText, yText] = labels[modeSelect.value];
+        xLabel.textContent = xText;
+        yLabel.textContent = yText;
+        resultBox.hidden = true;
+      }
+      modeSelect.addEventListener('change', updateLabels);
+      updateLabels();
+
+      form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        xField.classList.remove('has-error');
+        yField.classList.remove('has-error');
+
+        const x = parseFloat(xInput.value);
+        const y = parseFloat(yInput.value);
+        let hasError = false;
+
+        if (Number.isNaN(x)) {
+          xField.classList.add('has-error');
+          hasError = true;
+        }
+        if (Number.isNaN(y)) {
+          yField.classList.add('has-error');
+          hasError = true;
+        }
+
+        const mode = modeSelect.value;
+        if (!hasError && (mode === 'change' || mode === 'reverse') && x === 0) {
+          xField.classList.add('has-error');
+          hasError = true;
+        }
+
+        if (hasError) {
+          resultBox.hidden = true;
+          return;
+        }
+
+        let result = 0;
+        let headlineText = '';
+        let formulaText = '';
+
+        if (mode === 'of') {
+          result = (x / 100) * y;
+          headlineText = `${x}% of ${y} is ${trimNum(result)}`;
+          formulaText = `(${x} / 100) x ${y} = ${trimNum(result)}`;
+        } else if (mode === 'what-percent') {
+          result = (x / y) * 100;
+          headlineText = `${x} is ${trimNum(result)}% of ${y}`;
+          formulaText = `(${x} / ${y}) x 100 = ${trimNum(result)}%`;
+        } else if (mode === 'change') {
+          result = ((y - x) / x) * 100;
+          const direction = result >= 0 ? 'increase' : 'decrease';
+          headlineText = `${trimNum(Math.abs(result))}% ${direction} from ${x} to ${y}`;
+          formulaText = `((${y} - ${x}) / ${x}) x 100 = ${trimNum(result)}%`;
+        } else if (mode === 'reverse') {
+          result = y / (x / 100);
+          headlineText = `${y} is ${x}% of ${trimNum(result)}`;
+          formulaText = `${y} / (${x} / 100) = ${trimNum(result)}`;
+        }
+
+        headline.textContent = headlineText;
+        formulaEl.textContent = formulaText;
+        resultBox.hidden = false;
+      });
+
+      function trimNum(n: number) {
+        return Math.round(n * 1000) / 1000;
+      }
+    </script>
+  </Fragment>
+
+  <Fragment slot="how-it-works">
+    <h2>How It Works</h2>
+    <p>This tool covers four common percentage questions, each with its own formula.</p>
+    <ul>
+      <li><strong>X% of Y</strong>: (X / 100) times Y</li>
+      <li><strong>X is what percent of Y</strong>: (X / Y) times 100</li>
+      <li><strong>Percentage increase or decrease from X to Y</strong>: ((Y minus X) / X) times 100</li>
+      <li><strong>Y is X% of what number</strong>: Y divided by (X / 100)</li>
+    </ul>
+    <h3>Worked Example</h3>
+    <p>
+      Say a shirt was $40 and is now on sale for $30. Using the percentage change formula with
+      X as 40 and Y as 30, the calculation is ((30 minus 40) / 40) times 100, which equals
+      negative 25 percent. That means the price dropped by 25 percent.
+    </p>
+  </Fragment>
+</ToolLayout>
