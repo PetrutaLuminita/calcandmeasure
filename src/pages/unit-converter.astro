@@ -31,6 +31,11 @@ const faq = [
     answer:
       'Cups, tablespoons, teaspoons, fluid ounces, pints, quarts, and gallons here use US customary measurements, since those are the most commonly searched. Milliliters and liters are metric and are unaffected by this.',
   },
+  {
+    question: 'Why do I need to convert units at all if my country uses one system?',
+    answer:
+      'Recipes, product packaging, travel, and technical specifications frequently come from a country that uses a different system. A US recipe in cups and a UK recipe in grams, or a US road sign in miles versus a European one in kilometers, are common situations where a quick conversion avoids a mistake.',
+  },
 ];
 ---
 
@@ -210,6 +215,13 @@ const faq = [
 
   <Fragment slot="how-it-works">
     <h2>How It Works</h2>
+    <p>
+      A single converter that covers length, weight, volume, and temperature saves you from
+      hunting down four different tools. Home cooks use it to adapt a recipe written in
+      milliliters to cups, travelers use it to make sense of a foreign speed limit sign or
+      weather forecast, and students and tradespeople use it to move between metric and
+      imperial units on the job without keeping a chart of conversion factors memorized.
+    </p>
     <p>
       Length, weight, and volume conversions work by converting the input value to a common
       base unit (meters, grams, or milliliters), then converting that base value to the target

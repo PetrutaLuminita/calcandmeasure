@@ -32,6 +32,11 @@ const faq = [
     answer:
       'This calculator splits the total evenly across the number of people you enter. For an uneven split, calculate each person\'s share separately based on what they ordered.',
   },
+  {
+    question: 'Does the custom tip percentage field accept decimals?',
+    answer:
+      'Yes. You can enter a value like 17.5 percent if you want a tip amount between the quick-select buttons, and the calculation updates the same way it would for a whole number.',
+  },
 ];
 ---
 
@@ -155,6 +160,13 @@ const faq = [
 
   <Fragment slot="how-it-works">
     <h2>How It Works</h2>
+    <p>
+      A tip calculator earns its place at the table because mental math gets harder after a
+      long meal or a few drinks, and nobody wants to hold up the group while they try to work
+      out 18 percent of an odd number like $73.40. It is also useful for splitting a bill among
+      a group with different appetites for tipping generously, since you can quickly compare
+      what the total looks like at 15 percent versus 20 percent before agreeing on a number.
+    </p>
     <p>
       The tip amount is the bill multiplied by the tip percentage divided by 100. The total is
       the bill plus that tip. The amount per person is the total divided by the number of
