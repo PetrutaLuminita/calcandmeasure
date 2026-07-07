@@ -8,7 +8,7 @@
   --color-accent: #17594a;
   --color-accent-dark: #0e3d33;
   --color-accent-contrast: #ffffff;
-  --color-ad-label: #8a8a82;
+  --color-ad-label: #6b6b63;
   --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   --max-width: 960px;
   --radius: 4px;
@@ -255,7 +255,7 @@ code {
   margin-bottom: 24px;
 }
 
-.footer-grid h4 {
+.footer-grid h3 {
   font-size: 0.85rem;
   text-transform: uppercase;
   letter-spacing: 0.04em;
