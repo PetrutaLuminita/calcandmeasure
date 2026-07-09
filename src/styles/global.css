@@ -141,14 +141,18 @@ code {
 }
 
 .main-nav .nav-label {
+  display: inline-flex;
+  align-items: center;
   font-weight: 600;
   font-size: 0.95rem;
+  line-height: 1;
   cursor: pointer;
   background: none;
   border: none;
   font-family: inherit;
   color: var(--color-text);
   padding: 8px 0;
+  text-decoration: none;
 }
 
 .main-nav .nav-dropdown {
@@ -481,6 +485,7 @@ code {
 }
 
 .btn.btn-secondary:hover {
+  background: var(--color-surface);
   border-color: var(--color-accent);
   color: var(--color-accent);
 }
@@ -495,6 +500,12 @@ code {
   background: var(--color-accent);
   color: var(--color-accent-contrast);
   border-color: var(--color-accent);
+}
+
+.quick-tips button[aria-pressed="true"]:hover {
+  background: var(--color-accent-dark);
+  border-color: var(--color-accent-dark);
+  color: var(--color-accent-contrast);
 }
 
 .result-box {
