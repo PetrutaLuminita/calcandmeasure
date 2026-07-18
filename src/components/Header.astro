@@ -14,7 +14,7 @@ const converters = tools.filter((t) => t.category === 'Converters');
         <button class="nav-label" type="button" aria-haspopup="true">Everyday Calculators</button>
         <div class="nav-dropdown">
           {everyday.map((tool) => (
-            <a href={`/${tool.slug}`}>{tool.name}</a>
+            <a href={`/${tool.slug}/`}>{tool.name}</a>
           ))}
         </div>
       </div>
@@ -22,12 +22,12 @@ const converters = tools.filter((t) => t.category === 'Converters');
         <button class="nav-label" type="button" aria-haspopup="true">Converters</button>
         <div class="nav-dropdown">
           {converters.map((tool) => (
-            <a href={`/${tool.slug}`}>{tool.name}</a>
+            <a href={`/${tool.slug}/`}>{tool.name}</a>
           ))}
         </div>
       </div>
       <div class="nav-group">
-        <a class="nav-label" href="/about">About</a>
+        <a class="nav-label" href="/about/">About</a>
       </div>
     </nav>
 
@@ -40,19 +40,19 @@ const converters = tools.filter((t) => t.category === 'Converters');
     <h3>Everyday Calculators</h3>
     <ul>
       {everyday.map((tool) => (
-        <li><a href={`/${tool.slug}`}>{tool.name}</a></li>
+        <li><a href={`/${tool.slug}/`}>{tool.name}</a></li>
       ))}
     </ul>
     <h3>Converters</h3>
     <ul>
       {converters.map((tool) => (
-        <li><a href={`/${tool.slug}`}>{tool.name}</a></li>
+        <li><a href={`/${tool.slug}/`}>{tool.name}</a></li>
       ))}
     </ul>
     <h3>Site</h3>
     <ul>
-      <li><a href="/about">About</a></li>
-      <li><a href="/contact">Contact</a></li>
+      <li><a href="/about/">About</a></li>
+      <li><a href="/contact/">Contact</a></li>
     </ul>
   </div>
 </header>

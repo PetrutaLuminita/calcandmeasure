@@ -13,7 +13,7 @@ const year = new Date().getFullYear();
         <h3>Everyday Calculators</h3>
         <ul>
           {everyday.map((tool) => (
-            <li><a href={`/${tool.slug}`}>{tool.name}</a></li>
+            <li><a href={`/${tool.slug}/`}>{tool.name}</a></li>
           ))}
         </ul>
       </div>
@@ -21,17 +21,17 @@ const year = new Date().getFullYear();
         <h3>Converters</h3>
         <ul>
           {converters.map((tool) => (
-            <li><a href={`/${tool.slug}`}>{tool.name}</a></li>
+            <li><a href={`/${tool.slug}/`}>{tool.name}</a></li>
           ))}
         </ul>
       </div>
       <div>
         <h3>Site</h3>
         <ul>
-          <li><a href="/about">About</a></li>
-          <li><a href="/contact">Contact</a></li>
-          <li><a href="/privacy-policy">Privacy Policy</a></li>
-          <li><a href="/terms">Terms</a></li>
+          <li><a href="/about/">About</a></li>
+          <li><a href="/contact/">Contact</a></li>
+          <li><a href="/privacy-policy/">Privacy Policy</a></li>
+          <li><a href="/terms/">Terms</a></li>
         </ul>
       </div>
     </div>

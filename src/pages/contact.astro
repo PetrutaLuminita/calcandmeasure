@@ -3,13 +3,13 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
 const title = 'Contact | Calc and Measure';
 const description = 'How to get in touch with Calc and Measure about a tool, a correction, or feedback.';
-const path = '/contact';
+const path = '/contact/';
 
 const schema = {
   '@type': 'BreadcrumbList',
   itemListElement: [
-    { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://calcandmeasure.com' },
-    { '@type': 'ListItem', position: 2, name: 'Contact', item: 'https://calcandmeasure.com/contact' },
+    { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://calcandmeasure.com/' },
+    { '@type': 'ListItem', position: 2, name: 'Contact', item: 'https://calcandmeasure.com/contact/' },
   ],
 };
 ---
@@ -38,6 +38,6 @@ const schema = {
   </p>
   <p>
     For anything related to advertising on this site, see the
-    <a href="/privacy-policy">Privacy Policy</a> for details on how ads and cookies are used.
+    <a href="/privacy-policy/">Privacy Policy</a> for details on how ads and cookies are used.
   </p>
 </BaseLayout>

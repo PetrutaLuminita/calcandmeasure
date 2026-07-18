@@ -14,7 +14,7 @@ const schema = {
   '@context': 'https://schema.org',
   '@type': 'WebSite',
   name: 'Calc and Measure',
-  url: 'https://calcandmeasure.com',
+  url: 'https://calcandmeasure.com/',
 };
 ---
 
@@ -33,7 +33,7 @@ const schema = {
   <h2 class="category-heading" id="everyday-calculators">Everyday Calculators</h2>
   <div class="tool-grid">
     {everyday.map((tool) => (
-      <a class="tool-card" href={`/${tool.slug}`}>
+      <a class="tool-card" href={`/${tool.slug}/`}>
         <h3>{tool.name}</h3>
         <p>{tool.description}</p>
       </a>
@@ -43,7 +43,7 @@ const schema = {
   <h2 class="category-heading" id="converters">Converters</h2>
   <div class="tool-grid">
     {converters.map((tool) => (
-      <a class="tool-card" href={`/${tool.slug}`}>
+      <a class="tool-card" href={`/${tool.slug}/`}>
         <h3>{tool.name}</h3>
         <p>{tool.description}</p>
       </a>
